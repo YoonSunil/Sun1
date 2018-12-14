@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--  
+<mapper namespace="userNameSpace"> 
+<mapper namespace="userNameSpace">
+-->
+<mapper namespace="orderboardAndMember">
+
+	<!-- 조인을 만들어주는 작용=association  -->
+	<resultMap id="member-order-map" type="com.jang.member.MemberVO" extends="memberMap">
+		<association property="orderVO" resultMap="orderMap"/>
+	</resultMap>
+	
+	<resultMap id="memberMap" type="com.jang.member.MemberVO">
+		<id 	property="mseq" 				column="M_SEQ" />
+		<result property="mnickname" 			column="M_NICKNAME" />
+		<result property="mfrom" 				column="M_FROM" />
+		<result property="memail" 				column="M_EMAIL" />
+		<result property="maccountnumber"	 	column="M_ACCOUNT_NUMBER" />
+		<result property="mbank" 				column="M_BANK" />
+		<result property="mphone" 				column="M_PHONE" />
+		<result property="mregdate" 			column="M_REGDATE" />
+		<result property="maddress" 			column="M_ADDRESS" />
+		<result property="mlat" 				column="M_LAT" />
+		<result property="mlng" 				column="M_LNG" />
+		<result property="mdeleteyn" 			column="M_DELETE_YN" />
+		<result property="mgubun" 				column="M_GUBUN" />
+		<result property="mpush" 				column="M_PUSH" />
+		<result property="mzipcode" 			column="M_ZIPCODE" />
+		<result property="maddressdetail" 		column="M_ADDRESS_DETAIL" />
+		<result property="maccountholder" 		column="M_ACCOUNT_HOLDER" />
+		<result property="codelistseq" 			column="CODE_LIST_SEQ" />
+	</resultMap>
+	<resultMap id="orderMap" type="com.jang.member.OrderVO">
+		<id 	property="oseq" 			column="O_SEQ" />
+		<result property="otitle" 			column="O_TITLE" />
+		<result property="oregdate" 		column="O_REGDATE" />
+		<result property="otext" 			column="O_TEXT" />
+		<result property="opoint" 			column="O_POINT" />
+		<result property="opicture" 		column="O_PICTURE" />
+		<result property="mseq" 			column="M_SEQ" />
+		<result property="oaddress" 		column="O_ADDRESS" />
+		<result property="olat" 			column="O_LAT" />
+		<result property="olng" 			column="O_LNG" />
+		<result property="kseq" 			column="K_SEQ" />
+		<result property="codelistseq"	column="CODE_LIST_SEQ" />
+	</resultMap>
+	
+	
+ 	<sql id="commonSelect">m.M_NICKNAME , o.O_TITLE , o.O_POINT , o.REGDATE  </sql>
+ 	
+ 	<select id="Gaeshi" 
+			parameterType="com.jang.member.MemberVO" 
+			resultMap="memberMap">
+ 			select <include refid="commonSelect"  />
+ 			from member m,order_board o
+			where user_id=#{userId} and user_pw=#{userPw} 
+			and USER_DEL='n'
+ 	</select>
+ 	<select id="lll" parameterType="vo" resultMap="member-order-map">
+ 		<!-- 조인을 만들어준 맵을 불러오니까 리절트 맵 -->
+ 		
+ 	</select>
+ 	<insert id="member_register" 
+ 	parameterType="com.biz.member.MemberVO">
+ 			insert into member
+ 			(user_seq,user_id,user_name,user_pw
+ 			,user_email,user_gubun
+			,regdate,user_del,ppath,pname,sysname,join_path)
+			values
+			(users_seq.nextval,#{userId},#{userName},#{userPw},#{userEmail},'u'
+			,sysdate,'n',#{ppath},#{pname},#{sysname},#{joinPath}
+			)
+ 	</insert>
+ 	
+ 	<update id="member_update" parameterType="com.biz.member.MemberVO">
+			update member
+			set user_name=#{userName}, user_pw=#{userPw}, user_email=#{userEmail}, ppath=#{ppath}, pname=#{pname}, sysname=#{sysname}
+			where user_id=#{userId} and USER_DEL='n'
+ 	</update>
+ 	<update id="member_delete" parameterType="String">
+			update member
+			set USER_GUBUN='0', USER_DEL='y'
+			where user_id=#{value} and USER_DEL='n'
+  </update>
+  <select id="member_detail" parameterType="String" 
+  				resultMap="memberMap"
+  				>
+		select  user_seq, user_id ,user_name
+		,user_email,user_gubun, ppath,pname, sysname
+		from member
+		where user_id=#{value} and USER_DEL='n'
+  </select>
+  
+  <select id="member_list" parameterType="com.biz.member.MemberVO" 
+  resultMap="memberMap">
+		select  user_seq,user_id,user_name,user_email,user_gubun, ppath,pname, sysname
+		from member
+		<where>
+			<if test="searchGubun != null">
+				${searchGubun} = #{searchStr}
+			</if>
+		</where>
+		order by user_seq
+  </select>
+  
+</mapper>	
